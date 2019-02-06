@@ -51,29 +51,18 @@ def try_rosen(plot_3d=False):
     plt.show()
 
 
-def particleSwarm(particles=100, iterations=100, a=0.9, b=2, c=2, benchmark='rosenbrock', plotting=False):
+def particleSwarm(particles=100, iterations=100, a=0.5, b=2, c=2, benchmark='rosenbrock', plotting=False):
     # fig, ax = plt.subplots()
     ### Init Particles
-    if benchmark == 'rosenbrock':
-        partPos = np.array([np.random.uniform(-2, 2, size=particles),
-                            np.random.uniform(-1, 3, size=particles)]).T
-        partVelocity = np.array([np.random.uniform(-4, 4, size=particles),
-                                 np.random.uniform(-4, 4, size=particles)]).T
-        benchmarkFunction = lambda x, y: rosenbrock(x, y)
-        if plotting:
-            X = np.arange(-2, 2, 0.1)
-            Y = np.arange(-1, 3, 0.1)
-            X, Y = np.meshgrid(X, Y)
-            Z = np.zeros(X.shape)
-
-            for i in np.arange(X.shape[0]):
-                for j in np.arange(X.shape[1]):
-                    Z[i, j] = rosenbrock(X[i, j], Y[i, j])
-    elif benchmark == 'rastrigin':
+    xBounds = [-5, 5]
+    yBounds = [-5, 5]
+    if benchmark == 'rastrigin':
         partPos = np.array([np.random.uniform(-5, 5, size=particles),
                             np.random.uniform(-5, 5, size=particles)]).T
-        partVelocity = np.array([np.random.uniform(-10, 10, size=particles),
-                                 np.random.uniform(-10, 10, size=particles)]).T
+        partVelocity = np.array([np.random.uniform(-5, 5, size=particles),
+                                 np.random.uniform(-5, 5, size=particles)]).T
+        xBounds = [-5, 5]
+        yBounds = [-5, 5]
         benchmarkFunction = lambda x, y: rastrigin(x, y)
         if plotting:
             X = np.arange(-5, 5, 0.1)
@@ -87,8 +76,10 @@ def particleSwarm(particles=100, iterations=100, a=0.9, b=2, c=2, benchmark='ros
     else:
         partPos = np.array([np.random.uniform(-2, 2, size=particles),
                             np.random.uniform(-1, 3, size=particles)]).T
-        partVelocity = np.array([np.random.uniform(-4, 4, size=particles),
-                                 np.random.uniform(-4, 4, size=particles)]).T
+        partVelocity = np.array([np.random.uniform(-2, 2, size=particles),
+                                 np.random.uniform(-1, 3, size=particles)]).T
+        xBounds = [-2, 2]
+        yBounds = [-1, 3]
         benchmarkFunction = lambda x, y: rosenbrock(x, y)
         if plotting:
             X = np.arange(-2, 2, 0.1)
@@ -101,36 +92,41 @@ def particleSwarm(particles=100, iterations=100, a=0.9, b=2, c=2, benchmark='ros
                     Z[i, j] = rosenbrock(X[i, j], Y[i, j])
 
     partBestPos = np.copy(partPos)
+    partBestVal = np.zeros(len(partPos))
     globBestPos = partBestPos[0]
     globBest = benchmarkFunction(globBestPos[0], globBestPos[1])
-    for p in partBestPos:
-        tmp = benchmarkFunction(p[0], p[1])
-        if tmp < globBest:
-            globBest = tmp
+    for i, p in enumerate(partBestPos):
+        partBestVal[i] = benchmarkFunction(p[0], p[1])
+        if partBestVal[i] < globBest:
+            globBest = partBestVal[i]
             globBestPos = p
 
+
+    ########################
     ### Let the particles do its thang
     for iter in range(iterations):
         # a -= 0.5/iterations
         for i, p in enumerate(partPos):
-            for d in range(len(partPos[i])):
-                rP = np.random.randint(0, 2)
-                rG = np.random.randint(0, 2)
-                # Update velocity
-                partVelocity[i, d] = a * partVelocity[i, d] + \
-                                     b * rP * (partBestPos[i, d] - p[d]) + \
-                                     c * rG * (globBestPos[d] - p[d])
+            # for d in range(len(partPos[i])):
+            rP = np.random.randint(0, 2)
+            rG = np.random.randint(0, 2)
+            # Update velocity
+            partVelocity[i] = a * partVelocity[i] + \
+                              b * rP * (partBestPos[i] - p) + \
+                              c * rG * (globBestPos - p)
+            # print(partVelocity[i])
             # new Particle Position
             partPos[i] += partVelocity[i]
-            partPos[i, 0] = min(max(partPos[i, 0], -5), 5)
-            partPos[i, 1] = min(max(partPos[i, 1], -5), 5)
+            partPos[i, 0] = min(max(partPos[i, 0], xBounds[0]), xBounds[1])
+            partPos[i, 1] = min(max(partPos[i, 1], yBounds[0]), yBounds[1])
+            partVal = benchmarkFunction(partPos[i, 0], partPos[i, 1])
             # print(f'Velocity before: {partPos[i] - partVelocity[i]} after: {partPos[i]}')
-            if benchmarkFunction(partPos[i, 0], partPos[i, 1]) < benchmarkFunction(partBestPos[i, 0],
-                                                                                   partBestPos[i, 1]):
+            if partVal <= partBestVal[i]:
                 partBestPos[i] = partPos[i]
-                if benchmarkFunction(partBestPos[i, 0], partBestPos[i, 1]) < globBest:
-                    globBest = benchmarkFunction(partBestPos[i, 0], partBestPos[i, 1])
+                partBestVal[i] = partVal
+                if partBestVal[i] <= globBest:
                     globBestPos = partBestPos[i]
+                    globBest = partBestVal[i]
 
     # Plot the particles
     if plotting:
@@ -138,13 +134,16 @@ def particleSwarm(particles=100, iterations=100, a=0.9, b=2, c=2, benchmark='ros
         # ax = plt.subplot(111)
         plt.contourf(X, Y, Z, 50)
         ### End Init Plotting
-        plt.plot(partPos[:, 0], partPos[:, 1], 'o')
+        plt.plot(partPos[:, 0], partPos[:, 1], 'o', c='y')
+        plt.plot(globBestPos[0], globBestPos[1], 'o', c='r')
+        plt.xlim(xBounds[0], xBounds[1])
+        plt.ylim(yBounds[0], yBounds[1])
         # plt.draw()
         # plt.pause(0.001)
         plt.show()
     return globBestPos, globBest
 
-
-bestPos, best = particleSwarm(particles=100, iterations=1000, benchmark='rastrigin', plotting=True)
+benchmark = ['rosenbrock', 'rastrigin']
+bestPos, best = particleSwarm(particles=100, iterations=200, benchmark=benchmark[1], plotting=True)
 
 print(f'Best Value: {best} at Position {bestPos}')
