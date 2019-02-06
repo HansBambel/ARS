@@ -29,8 +29,8 @@ def test_rast(plot_3d=False):
     plt.show()
 
 def test_rosen(plot_3d=False):
-    X_rosen = np.arange(-2, 2, 0.01)
-    Y_rosen = np.arange(-1, 3, 0.01)
+    X_rosen = np.arange(-2, 2, 0.1)
+    Y_rosen = np.arange(-1, 3, 0.1)
     X_rosen, Y_rosen = np.meshgrid(X_rosen, Y_rosen)
     Z_rosen = np.zeros(X_rosen.shape)
 
@@ -47,4 +47,20 @@ def test_rosen(plot_3d=False):
         plt.colorbar()
     plt.show()
 
-test_rast(True)
+
+def particleSwarm(particles=100, a=0.9, b=2, c=2, benchmark='rosenbrock'):
+    if benchmark == 'rosenbrock':
+        partPos = np.array(np.random.uniform(-2, 2, size=particles),
+                           np.random.uniform(-1, 3, size=particles))
+    elif benchmark == 'rastrigin':
+        partPos = np.array(np.random.uniform(-5, 5, size=particles),
+                           np.random.uniform(-5, 5, size=particles))
+    else:
+        partPos = np.array(np.random.uniform(-2, 2, size=particles),
+                           np.random.uniform(-1, 3, size=particles))
+
+    partBestPos = np.copy(partPos)
+
+
+
+test_rosen(True)
