@@ -51,7 +51,7 @@ def try_rosen(plot_3d=False):
     plt.show()
 
 
-def particleSwarm(particles=100, iterations=100, a=0.5, b=2, c=2, benchmark='rosenbrock', plotting=False):
+def particleSwarm(particles=100, iterations=100, a=0.9, b=2, c=2, benchmark='rosenbrock', plotting=False):
     # fig, ax = plt.subplots()
     ### Init Particles
     xBounds = [-5, 5]
@@ -128,22 +128,30 @@ def particleSwarm(particles=100, iterations=100, a=0.5, b=2, c=2, benchmark='ros
                     globBestPos = partBestPos[i]
                     globBest = partBestVal[i]
 
-    # Plot the particles
+        # Plot the particles
+        if plotting:
+            plt.clf()
+            plt.title(f'Iteration {iter}/{iterations}')
+            plt.contourf(X, Y, Z, 50)
+            plt.plot(partPos[:, 0], partPos[:, 1], 'o', c='y')
+            plt.plot(globBestPos[0], globBestPos[1], 'o', c='r')
+            plt.xlim(xBounds[0], xBounds[1])
+            plt.ylim(yBounds[0], yBounds[1])
+            plt.draw()
+            plt.pause(0.001)
+            # plt.show()
     if plotting:
-        ### Init Plotting
-        # ax = plt.subplot(111)
+        plt.clf()
+        plt.title(f'Iteration {iter}/{iterations}')
         plt.contourf(X, Y, Z, 50)
-        ### End Init Plotting
         plt.plot(partPos[:, 0], partPos[:, 1], 'o', c='y')
         plt.plot(globBestPos[0], globBestPos[1], 'o', c='r')
         plt.xlim(xBounds[0], xBounds[1])
         plt.ylim(yBounds[0], yBounds[1])
-        # plt.draw()
-        # plt.pause(0.001)
-        plt.show()
     return globBestPos, globBest
 
 benchmark = ['rosenbrock', 'rastrigin']
-bestPos, best = particleSwarm(particles=100, iterations=200, benchmark=benchmark[1], plotting=True)
-
+a, b, c = 0.5, 1, 1
+bestPos, best = particleSwarm(particles=100, iterations=200, a=a, b=b, c=c, benchmark=benchmark[1], plotting=True)
+plt.show()
 print(f'Best Value: {best} at Position {bestPos}')
