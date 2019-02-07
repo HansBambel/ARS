@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 def rosenbrock(x, y):
-    return (1 - x) ** 2 + 100 * (y - x ** 2) ** 2
+    return (0 - x) ** 2 + 100 * (y - x ** 2) ** 2
 
 
 def rastrigin(x, y):
@@ -52,7 +52,6 @@ def try_rosen(plot_3d=False):
 
 
 def particleSwarm(particles=100, iterations=100, a=0.9, b=2, c=2, benchmark='rosenbrock', plotting=False):
-    # fig, ax = plt.subplots()
     ### Init Particles
     xBounds = [-5, 5]
     yBounds = [-5, 5]
@@ -150,8 +149,9 @@ def particleSwarm(particles=100, iterations=100, a=0.9, b=2, c=2, benchmark='ros
         plt.ylim(yBounds[0], yBounds[1])
     return globBestPos, globBest
 
+
 benchmark = ['rosenbrock', 'rastrigin']
 a, b, c = 0.5, 1, 1
-bestPos, best = particleSwarm(particles=100, iterations=200, a=a, b=b, c=c, benchmark=benchmark[1], plotting=True)
-plt.show()
-print(f'Best Value: {best} at Position {bestPos}')
+bestPos, best = particleSwarm(particles=100, iterations=100, a=a, b=b, c=c, benchmark=benchmark[0], plotting=True)
+# plt.show()
+print(f'Best Value: {np.round(best)} at Position X: {np.round(bestPos[0])} Y: {np.round(bestPos[1])}')
