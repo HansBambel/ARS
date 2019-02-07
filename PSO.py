@@ -53,42 +53,27 @@ def try_rosen(plot_3d=False):
 
 def particleSwarm(particles=100, iterations=100, a=0.9, b=2, c=2, benchmark='rosenbrock', plotting=False):
     ### Init Particles
-    xBounds = [-5, 5]
-    yBounds = [-5, 5]
     if benchmark == 'rastrigin':
-        partPos = np.array([np.random.uniform(-5, 5, size=particles),
-                            np.random.uniform(-5, 5, size=particles)]).T
-        partVelocity = np.array([np.random.uniform(-5, 5, size=particles),
-                                 np.random.uniform(-5, 5, size=particles)]).T
         xBounds = [-5, 5]
         yBounds = [-5, 5]
         benchmarkFunction = lambda x, y: rastrigin(x, y)
-        if plotting:
-            X = np.arange(-5, 5, 0.1)
-            Y = np.arange(-5, 5, 0.1)
-            X, Y = np.meshgrid(X, Y)
-            Z = np.zeros(X.shape)
-
-            for i in np.arange(X.shape[0]):
-                for j in np.arange(X.shape[1]):
-                    Z[i, j] = rastrigin(X[i, j], Y[i, j])
     else:
-        partPos = np.array([np.random.uniform(-2, 2, size=particles),
-                            np.random.uniform(-1, 3, size=particles)]).T
-        partVelocity = np.array([np.random.uniform(-2, 2, size=particles),
-                                 np.random.uniform(-1, 3, size=particles)]).T
         xBounds = [-2, 2]
         yBounds = [-1, 3]
         benchmarkFunction = lambda x, y: rosenbrock(x, y)
-        if plotting:
-            X = np.arange(-2, 2, 0.1)
-            Y = np.arange(-1, 3, 0.1)
-            X, Y = np.meshgrid(X, Y)
-            Z = np.zeros(X.shape)
 
-            for i in np.arange(X.shape[0]):
-                for j in np.arange(X.shape[1]):
-                    Z[i, j] = rosenbrock(X[i, j], Y[i, j])
+    partPos = np.array([np.random.uniform(xBounds[0], xBounds[1], size=particles),
+                        np.random.uniform(yBounds[0], yBounds[1], size=particles)]).T
+    partVelocity = np.array([np.random.uniform(xBounds[0], xBounds[1], size=particles),
+                             np.random.uniform(yBounds[0], yBounds[1], size=particles)]).T
+    if plotting:
+        X = np.arange(xBounds[0], xBounds[1], 0.1)
+        Y = np.arange(yBounds[0], yBounds[1], 0.1)
+        X, Y = np.meshgrid(X, Y)
+        Z = np.zeros(X.shape)
+        for i in np.arange(X.shape[0]):
+            for j in np.arange(X.shape[1]):
+                Z[i, j] = benchmarkFunction(X[i, j], Y[i, j])
 
     partBestPos = np.copy(partPos)
     partBestVal = np.zeros(len(partPos))
@@ -104,9 +89,7 @@ def particleSwarm(particles=100, iterations=100, a=0.9, b=2, c=2, benchmark='ros
     ########################
     ### Let the particles do its thang
     for iter in range(iterations):
-        # a -= 0.5/iterations
         for i, p in enumerate(partPos):
-            # for d in range(len(partPos[i])):
             rP = np.random.randint(0, 2)
             rG = np.random.randint(0, 2)
             # Update velocity
@@ -114,7 +97,7 @@ def particleSwarm(particles=100, iterations=100, a=0.9, b=2, c=2, benchmark='ros
                               b * rP * (partBestPos[i] - p) + \
                               c * rG * (globBestPos - p)
             # print(partVelocity[i])
-            # new Particle Position
+            # new Particle Position (keep them in bounds)
             partPos[i] += partVelocity[i]
             partPos[i, 0] = min(max(partPos[i, 0], xBounds[0]), xBounds[1])
             partPos[i, 1] = min(max(partPos[i, 1], yBounds[0]), yBounds[1])
@@ -129,29 +112,26 @@ def particleSwarm(particles=100, iterations=100, a=0.9, b=2, c=2, benchmark='ros
 
         # Plot the particles
         if plotting:
-            plt.clf()
-            plt.title(f'Iteration {iter}/{iterations}')
-            plt.contourf(X, Y, Z, 50)
-            plt.plot(partPos[:, 0], partPos[:, 1], 'o', c='y')
-            plt.plot(globBestPos[0], globBestPos[1], 'o', c='r')
-            plt.xlim(xBounds[0], xBounds[1])
-            plt.ylim(yBounds[0], yBounds[1])
-            plt.draw()
-            plt.pause(0.001)
-            # plt.show()
+            plot_particles(iter, iterations, X, Y, Z, partPos, globBestPos, xBounds, yBounds)
     if plotting:
-        plt.clf()
-        plt.title(f'Iteration {iter}/{iterations}')
-        plt.contourf(X, Y, Z, 50)
-        plt.plot(partPos[:, 0], partPos[:, 1], 'o', c='y')
-        plt.plot(globBestPos[0], globBestPos[1], 'o', c='r')
-        plt.xlim(xBounds[0], xBounds[1])
-        plt.ylim(yBounds[0], yBounds[1])
+        plot_particles(iter, iterations, X, Y, Z, partPos, globBestPos, xBounds, yBounds)
+
     return globBestPos, globBest
+
+
+def plot_particles(iter, iterations, X, Y, Z, partPos, globBestPos, xBounds, yBounds):
+    plt.clf()
+    plt.title(f'Iteration {iter}/{iterations}')
+    plt.contourf(X, Y, Z, 50, cmap='plasma')
+    plt.plot(partPos[:, 0], partPos[:, 1], 'o', c='y', markersize=3)
+    plt.plot(globBestPos[0], globBestPos[1], 'o', c='r')
+    plt.xlim(xBounds[0], xBounds[1])
+    plt.ylim(yBounds[0], yBounds[1])
+    plt.draw()
+    plt.pause(0.001)
 
 
 benchmark = ['rosenbrock', 'rastrigin']
 a, b, c = 0.5, 1, 1
-bestPos, best = particleSwarm(particles=100, iterations=100, a=a, b=b, c=c, benchmark=benchmark[0], plotting=True)
-# plt.show()
+bestPos, best = particleSwarm(particles=100, iterations=75, a=a, b=b, c=c, benchmark=benchmark[0], plotting=False)
 print(f'Best Value: {np.round(best)} at Position X: {np.round(bestPos[0])} Y: {np.round(bestPos[1])}')
