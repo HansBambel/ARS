@@ -122,7 +122,7 @@ def particleSwarm(particles=100, iterations=100, a=0.9, b=2, c=2, benchmark='ros
 def plot_particles(iter, iterations, X, Y, Z, partPos, globBestPos, xBounds, yBounds):
     plt.clf()
     plt.title(f'Iteration {iter}/{iterations}')
-    plt.contourf(X, Y, Z, 50, cmap='plasma')
+    plt.contourf(X, Y, Z, 50)
     plt.plot(partPos[:, 0], partPos[:, 1], 'o', c='y', markersize=3)
     plt.plot(globBestPos[0], globBestPos[1], 'o', c='r')
     plt.xlim(xBounds[0], xBounds[1])
@@ -133,5 +133,5 @@ def plot_particles(iter, iterations, X, Y, Z, partPos, globBestPos, xBounds, yBo
 
 benchmark = ['rosenbrock', 'rastrigin']
 a, b, c = 0.5, 1, 1
-bestPos, best = particleSwarm(particles=100, iterations=75, a=a, b=b, c=c, benchmark=benchmark[0], plotting=False)
+bestPos, best = particleSwarm(particles=100, iterations=75, a=a, b=b, c=c, benchmark=benchmark[0], plotting=True)
 print(f'Best Value: {np.round(best)} at Position X: {np.round(bestPos[0])} Y: {np.round(bestPos[1])}')
